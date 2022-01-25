@@ -5,7 +5,7 @@ const artistsRouter = express.Router();
 
 module.exports = artistsRouter;
 
-const db = new sqlite3.Database(process.env.TEST_DATABASE || '../database.sqlite');
+const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite');
 
 // Read all artists
 artistsRouter.get('/', (req, res, next) => {
@@ -86,5 +86,20 @@ artistsRouter.put('/:artistId', (req, res, next) => {
     } else {
         res.status(400).send('Missing data (name, date_of_birth or biography)!');
     }
+});
+
+// Delete artist via id
+artistsRouter.delete('/:artistId', (req, res, next) => {
+    db.run('UPDATE Artist SET is_currently_employed = 0 WHERE id = $id', {
+        $id: req.params.artistId
+    }, function(err) {
+        if(err) {
+            next(err);
+        } else {
+            db.get(`SELECT * FROM Artist WHERE id = $id`, { $id: req.params.artistId }, (err, deletedArtist) => {
+                res.status(200).json({artist: deletedArtist});
+            });
+        }
+    } );
 });
 
