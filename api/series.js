@@ -1,6 +1,8 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 
+const issuesRouter = require('./issues');
+
 const seriesRouter = express.Router();
 
 module.exports = seriesRouter;
@@ -79,5 +81,8 @@ seriesRouter.put('/:seriesId', (req, res, next) => {
         res.status(400).send('Missing Data (name, description)!')    
     }
 });
+
+// Mount issuesRouter
+seriesRouter.use('/:seriesId/issues', issuesRouter);
 
 
