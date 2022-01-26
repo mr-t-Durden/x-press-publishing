@@ -98,3 +98,14 @@ issuesRouter.put('/:issueId', (req, res, next) => {
         res.status(400).send('Missing data (name, issueNumber, publicationDate, artistId)!');
     }
 });
+
+// DELETE specific issue
+issuesRouter.delete('/:issueId', (req, res, next) => {
+    db.run(`DELETE FROM Issue WHERE id = $id`, { $id: req.params.issueId }, (err) => {
+        if(err) {
+            next(err);
+        } else {
+            res.status(204).send('Deletion successful.');
+        }
+    });
+});
