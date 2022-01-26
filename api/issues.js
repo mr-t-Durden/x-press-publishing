@@ -21,7 +21,7 @@ issuesRouter.get('/', (req, res, next) => {
 // Create new issue for related series
 issuesRouter.post('/', (req, res ,next) => {
     if ( req.body.issue.name && req.body.issue.issueNumber && req.body.issue.publicationDate && req.body.issue.artistId ) { 
-        // Check for valid artistIdissue.
+        // Check for valid artistId.
         db.get(`SELECT * FROM Artist WHERE id = $artistId`, { $artistId: req.body.issue.artistId }, (err, artist) => {
             if(!artist) {
                 res.status(400).send('Invalid artist-ID!');
@@ -62,4 +62,39 @@ issuesRouter.param('issueId', (req, res, next, id) => {
             }
         }
     });
+});
+
+// Update specific Issue
+issuesRouter.put('/:issueId', (req, res, next) => {
+    if ( req.body.issue.name && req.body.issue.issueNumber && req.body.issue.publicationDate && req.body.issue.artistId ) {
+        // Check for valid artistId.
+        db.get(`SELECT * FROM Artist WHERE id = $artistId`, { $artistId: req.body.issue.artistId }, (err, artist) => {
+            if(!artist) {
+                res.status(400).send('Invalid artist-ID!');
+            } 
+        });
+
+        db.run(`UPDATE Issue SET name = $name, issue_number = $issueNumber, publication_date = $publicationDate, artist_id = $artistId, series_id = $seriesId WHERE id = $id `, {
+            $id: req.params.issueId,
+            $name: req.body.issue.name,
+            $issueNumber: req.body.issue.issueNumber,
+            $publicationDate: req.body.issue.publicationDate,
+            $artistId: req.body.issue.artistId,
+            $seriesId: req.params.seriesId
+        }, (err) => {
+            if(err) {
+                next(err);
+            } else {
+                db.get(`SELECT * FROM Issue WHERE id = $id`, { $id: req.params.issueId }, (err, updatedIssue) => {
+                    if(err) {
+                        next(err);
+                    } else {
+                        res.status(200).json({issue: updatedIssue});
+                    }
+                });
+            }
+        });
+    } else {
+        res.status(400).send('Missing data (name, issueNumber, publicationDate, artistId)!');
+    }
 });
