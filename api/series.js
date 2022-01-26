@@ -38,3 +38,24 @@ seriesRouter.param('seriesId', (req, res, next, id) => {
 seriesRouter.get('/:seriesId', (req, res, next) => {
     res.status(200).json({ series: req.series });
 });
+
+// Create a new series
+seriesRouter.post('/', (req, res, next) => {
+    if( req.body.series.name && req.body.series.description ) {
+        db.run(`INSERT INTO Series (name, description) VALUES ($name, $description)`, {
+            $name: req.body.series.name,
+            $description: req.body.series.description
+        }, function(err) {
+            if(err) {
+                next(err);
+            } else {
+                db.get(`SELECT * FROM Series WHERE id = $id`, { $id: this.lastID }, (err, newSeries) => {
+                    res.status(201).json({series: newSeries});
+                });
+            }
+        });
+    } else {
+        res.status(400).send('Missing Data (name, description)!')    
+    }
+});
+
