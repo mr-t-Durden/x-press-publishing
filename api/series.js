@@ -19,7 +19,7 @@ seriesRouter.get('/', (req, res, next) => {
 });
 
 // Handle parameter :seriesId
-seriesRouter.param('sereisId', (req, res, next, id) => {
+seriesRouter.param('seriesId', (req, res, next, id) => {
     db.get(`SELECT * FROM Series WHERE id = $id`, { $id: id }, (err, series) => {
         if(err) {
             next(err);
@@ -32,4 +32,9 @@ seriesRouter.param('sereisId', (req, res, next, id) => {
             }
         }
     });
+});
+
+// Read specific series via id
+seriesRouter.get('/:seriesId', (req, res, next) => {
+    res.status(200).json({ series: req.series });
 });
