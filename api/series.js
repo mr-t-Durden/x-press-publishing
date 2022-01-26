@@ -82,6 +82,25 @@ seriesRouter.put('/:seriesId', (req, res, next) => {
     }
 });
 
+// Delete specific series, but only if there are no related issues
+seriesRouter.delete('/:seriesId', (req, res, next) => {
+    // Check for related issues
+    db.get(`SELECT * FROM Issue WHERE series_id = $seriesId`, { $seriesId: req.params.seriesId }, (err, issue) => {
+        if(issue) {
+            res.status(400).send('Cannot delete series. Open issues left!');
+        } else {
+            db.run(`DELETE FROM Series WHERE id = $seriesId`, { $seriesId: req.params.seriesId }, (err) => {
+                if(err) {
+                    next(err);
+                } else {
+                    res.status(204).send('Deletion successful.');
+                }
+            });
+        }
+    } );
+});
+
+
 // Mount issuesRouter
 seriesRouter.use('/:seriesId/issues', issuesRouter);
 
