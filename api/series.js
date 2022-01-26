@@ -59,3 +59,25 @@ seriesRouter.post('/', (req, res, next) => {
     }
 });
 
+// Update specific series via id
+seriesRouter.put('/:seriesId', (req, res, next) => {
+    if( req.body.series.name && req.body.series.description ) {
+        db.run(`UPDATE Series SET name = $name, description = $description WHERE id = $id`, {
+            $id: req.params.seriesId,
+            $name: req.body.series.name,
+            $description: req.body.series.description
+        }, function(err) {
+            if(err) {
+                next(err);
+            } else {
+                db.get(`SELECT * FROM Series WHERE id = $id`, { $id: req.params.seriesId }, (err, updatedSeries) => {
+                    res.status(200).json({series: updatedSeries});
+                });
+            }
+        });
+    } else {
+        res.status(400).send('Missing Data (name, description)!')    
+    }
+});
+
+
