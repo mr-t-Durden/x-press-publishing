@@ -7,6 +7,15 @@ module.exports = seriesRouter;
 
 const db = new sqlite3.Database(process.env.TEST_DATABASE || './database.sqlite');
 
-
+// Read all series
+seriesRouter.get('/', (req, res, next) => {
+    db.all(`SELECT * FROM Series`, (err, rows) => {
+        if(err) {
+            next(err);
+        } else {
+            res.status(200).json({series: rows});
+        }
+    });
+});
 
 
